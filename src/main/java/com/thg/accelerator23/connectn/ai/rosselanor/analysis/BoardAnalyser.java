@@ -5,8 +5,6 @@ import com.thehutgroup.accelerator.connectn.player.Counter;
 import com.thehutgroup.accelerator.connectn.player.GameConfig;
 import com.thehutgroup.accelerator.connectn.player.Position;
 import com.thg.accelerator23.connectn.ai.rosselanor.model.Line;
-
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +47,7 @@ public class BoardAnalyser {
     positionsByFunction.put(diagUpLeftMover, rightBottom);
   }
 
+
   public GameState calculateGameState(Board board) {
     List<Line> lines = getLines(board);
     Map<Counter, Integer> bestRunByColour = new HashMap<>();
@@ -74,18 +73,21 @@ public class BoardAnalyser {
             i -> board.hasCounterAtPosition(new Position(i, board.getConfig().getHeight() - 1)));
   }
 
-  public List<Line> getLines(Board board) {
+
+  private List<Line> getLines(Board board) {
     ArrayList<Line> lines = new ArrayList<>();
     for (Map.Entry<Function<Position, Position>, List<Position>> entry : positionsByFunction
         .entrySet()) {
       Function<Position, Position> function = entry.getKey();
       List<Position> startPositions = entry.getValue();
-      lines.addAll(startPositions.stream().map(p -> new BoardLine(board, p, function)).collect(Collectors.toList()));
+      lines.addAll(startPositions.stream().map(p -> new BoardLine(board, p, function))
+          .collect(Collectors.toList()));
     }
     return lines;
   }
 
-  public Map<Counter, Integer> getBestRunByColour(Line line) {
+
+  private Map<Counter, Integer> getBestRunByColour(Line line) {
     HashMap<Counter, Integer> bestRunByColour = new HashMap<>();
     for (Counter c : Counter.values()) {
       bestRunByColour.put(c, 0);
@@ -111,4 +113,28 @@ public class BoardAnalyser {
     }
     return bestRunByColour;
   }
+
+ 
+
+//  public int evaluate() {
+//    int player1Score = 0;
+//    int player2Score = 0;
+//
+//    if (checkWinState()) {
+//      if (winner == Constants.P1) {
+//        player1Score = (int) Math.pow(10, (checkersInARow - 2));
+//      } else if (winner == Constants.P2) {
+//        player2Score = (int) Math.pow(10, (checkersInARow - 2));
+//      }
+//    }
+//
+//    for (int i = 0; i < checkersInARow - 2; i++) {
+//      player1Score += countNInARow(i + 2, Constants.P1) * Math.pow(10, i);
+//      player2Score += countNInARow(i + 2, Constants.P2) * Math.pow(10, i);
+//    }
+//
+//    // If the result is 0, then it's a draw.
+//    return player1Score - player2Score;
+//  }
+
 }
