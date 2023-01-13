@@ -164,17 +164,17 @@ public class BoardAnalyser {
             }
 
             if (result.get(myCounter) == 4) {
-                myScore = Integer.MAX_VALUE;
-                oppositionScore = Integer.MIN_VALUE;
+                myScore += 1000000;
+                oppositionScore -= 1000000;
 
             }
             if (result.get(oppositionCounter) == 4) {
-                myScore = Integer.MIN_VALUE;
-                oppositionScore = Integer.MAX_VALUE;
+                myScore -= 1000000;
+                oppositionScore += 1000000;
             }
 
         }
-        return myScore - oppositionScore;
+        return myScore;
     }
 
 

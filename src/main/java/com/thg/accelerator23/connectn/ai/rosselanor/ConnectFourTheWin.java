@@ -7,12 +7,12 @@ import com.thehutgroup.accelerator.connectn.player.Player;
 import com.thg.accelerator23.connectn.ai.rosselanor.analysis.BoardAnalyser;
 
 
-public class ConnectBot extends Player {
+public class ConnectFourTheWin extends Player {
     Counter myCounter;
     MiniMaxAI miniMaxAI;
 
-    public ConnectBot(Counter myCounter) {
-        super(myCounter, ConnectBot.class.getName());
+    public ConnectFourTheWin(Counter myCounter) {
+        super(myCounter, ConnectFourTheWin.class.getName());
         this.myCounter = myCounter;
         miniMaxAI = new MiniMaxAI(5, myCounter);
     }
