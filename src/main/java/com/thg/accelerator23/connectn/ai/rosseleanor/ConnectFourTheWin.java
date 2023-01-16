@@ -9,12 +9,12 @@ import com.thg.accelerator23.connectn.ai.rosseleanor.analysis.BoardAnalyser;
 
 public class ConnectFourTheWin extends Player {
     Counter myCounter;
-    MiniMaxAI miniMaxAI;
+    AI miniMaxAI;
 
     public ConnectFourTheWin(Counter myCounter) {
         super(myCounter, ConnectFourTheWin.class.getName());
         this.myCounter = myCounter;
-        miniMaxAI = new MiniMaxAI(4, myCounter);
+        miniMaxAI = new MiniMaxAI(5, myCounter);
     }
 
     @Override
