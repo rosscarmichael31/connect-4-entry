@@ -129,7 +129,7 @@ public class MiniMaxAI implements AI {
             int maxScore = Integer.MIN_VALUE;
             int maxColumnChoice = randomMove(board);
 
-            children = getChildrenMiniMax(counter);
+            children = getChildrenMiniMax(maximisingCounter);
             int column = 0;
 
             for (Board child : children) {
@@ -141,13 +141,12 @@ public class MiniMaxAI implements AI {
 
                 column++;
             }
-
             return new MinimaxMove(maxColumnChoice, maxScore);
 
         } else {
             int minScore = Integer.MAX_VALUE;
             int minColumnChoice = randomMove(board);
-            children = getChildrenMiniMax(counter);
+            children = getChildrenMiniMax(minimisingCounter);
             int column = 0;
 
             for (Board child : children) {
