@@ -5,29 +5,29 @@ import com.thehutgroup.accelerator.connectn.player.Counter;
 import com.thehutgroup.accelerator.connectn.player.InvalidMoveException;
 import com.thg.accelerator23.connectn.ai.rosseleanor.analysis.BoardAnalyser;
 import com.thg.accelerator23.connectn.ai.rosseleanor.analysis.GameState;
+import com.thg.accelerator23.connectn.ai.rosseleanor.model.MinimaxMove;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class MiniMaxAI implements AI {
     private final int maxDepth;
     private final Counter maximisingCounter;
-    private final Random r;
+    private final Counter minimisingCounter;
     GameState gameState;
-    private Counter minimisingCounter;
+
+    MinimaxMove minimaxMove;
     private BoardAnalyser boardAnalyser;
     private Board board;
-    private int column;
+    private List<Integer> emptyCols;
+    private List<Board> children;
 
 
     public MiniMaxAI(int maxDepth, Counter maximisingCounter) {
         this.maxDepth = maxDepth;
         this.maximisingCounter = maximisingCounter;
         this.minimisingCounter = maximisingCounter.getOther();
-        this.r = new Random();
-        r.setSeed(10);
     }
 
     public void setBoard(Board board) {
@@ -38,38 +38,54 @@ public class MiniMaxAI implements AI {
         this.boardAnalyser = boardAnalyser;
     }
 
-    private int getRandomInt() {
-        return ThreadLocalRandom.current().nextInt(0, board.getConfig().getWidth());
-    }
 
     @Override
     public int getMove() throws InvalidMoveException {
-        boolean isValid = false;
-        int randomCol = 0;
 
-        int score = max(board, 0);
-
-        System.out.println(score + " " + column);
-
-
-        if (boardAnalyser.isColumnFull(board, column)) {
-            int count = 0;
-            while (!isValid) {
-                randomCol = getRandomInt();
-                if (!boardAnalyser.isColumnFull(board, randomCol)) {
-                    isValid = true;
-                }
-                count++;
-                if (count > board.getConfig().getWidth()) {
-                    return -1;
-                }
-            }
-            return randomCol;
+        if (boardAnalyser.isBoardFull(board)) {
+            throw new RuntimeException("Board is full!");
         }
-        return column;
+
+        int bestMove = Math.floorDiv(board.getConfig().getWidth(), 2);
+        if (boardAnalyser.isBoardEmpty(board)) {
+            return bestMove;
+        }
+        //int bestScore = Integer.MIN_VALUE;
+
+        minimaxMove = minimax(maxDepth, maximisingCounter, board);
+
+//        children = getChildren(maximisingCounter);
+//
+//        for (int i = 0; i < children.size(); i++) {
+//            int score = minimax(maxDepth, minimisingCounter, children.get(i));
+//            if (score >= bestScore) {
+//                bestMove = emptyCols.get(i);
+//                bestScore = score;
+//            }
+//
+//            if (score == bestScore) {
+//                if (new Random().nextInt(2) == 0) {
+//                    bestMove = emptyCols.get(i);
+//                }
+//            }
+//        }
+        return minimaxMove.getColumn();
     }
 
     protected List<Board> getChildren(Counter counter) throws InvalidMoveException {
+        emptyCols = new ArrayList<>();
+        List<Board> children = new ArrayList<>();
+        for (int col = 0; col < board.getConfig().getWidth(); col++) {
+            if (!boardAnalyser.isColumnFull(board, col)) {
+                Board child = new Board(board, col, counter);
+                children.add(child);
+                emptyCols.add(col);
+            }
+        }
+        return children;
+    }
+
+    protected List<Board> getChildrenMiniMax(Counter counter) throws InvalidMoveException {
         List<Board> children = new ArrayList<>();
         for (int col = 0; col < board.getConfig().getWidth(); col++) {
             if (!boardAnalyser.isColumnFull(board, col)) {
@@ -80,51 +96,74 @@ public class MiniMaxAI implements AI {
         return children;
     }
 
-    public int max(Board board, int depth) throws InvalidMoveException {
-        gameState = boardAnalyser.calculateGameState(board);
-        int score = Integer.MIN_VALUE;
 
-        if (gameState.isEnd() || (depth == maxDepth)) {
-            return boardAnalyser.analyse(board, maximisingCounter);
-        }
-
-        List<Board> children = new ArrayList<>(getChildren(maximisingCounter));
-
-
-        int childCol = 0;
-
-        for (Board child : children) {
-            int minScore = min(child, depth + 1);
-
-            if (minScore >= score) {
-                column = childCol;
-                score = minScore;
-            }
-            childCol++;
-        }
-        return score;
+    public int randomMove(Board board) {
+        RandomBot randomMove = new RandomBot(maximisingCounter);
+        int move = randomMove.makeMove(board);
+        return move;
     }
 
-    public int min(Board board, int depth) throws InvalidMoveException {
+
+    public MinimaxMove minimax(int depth, Counter counter, Board board) throws InvalidMoveException {
+
         gameState = boardAnalyser.calculateGameState(board);
-        int score = Integer.MAX_VALUE;
 
-        if (gameState.isEnd() || (depth == maxDepth)) {
-            return boardAnalyser.analyse(board, maximisingCounter);
-        }
-
-        List<Board> children = new ArrayList<>(getChildren(minimisingCounter));
-
-        int childCol = 0;
-
-        for (Board child : children) {
-            int maxScore = max(child, depth + 1);
-            if (maxScore <= score) {
-                column = childCol;
-                score = maxScore;
+        if (gameState.isEnd() || depth == 0) {
+            if (gameState.isEnd()){
+                if (gameState.getWinner() == maximisingCounter) {
+                    return new MinimaxMove(randomMove(board), 1000000);
+                } else if (gameState.getWinner() == minimisingCounter) {
+                    return new MinimaxMove(randomMove(board), -1000000);
+                } else if (gameState.isDraw()) {
+                    return new MinimaxMove(randomMove(board), 0);
+                }
             }
-            childCol++;
+            else {
+                return new MinimaxMove(randomMove(board), boardAnalyser.analyse(board, maximisingCounter));
+            }
         }
-        return score;
+
+        List<Board> children;
+        if (counter == maximisingCounter) {
+            int maxScore = Integer.MIN_VALUE;
+            int maxColumnChoice = randomMove(board);
+
+            children = getChildrenMiniMax(maximisingCounter);
+            int column = 0;
+
+            for (Board child : children) {
+                int score = minimax(depth - 1, minimisingCounter, child).getScore();
+                if (maxScore < score) {
+                    maxScore = score;
+                    maxColumnChoice = column;
+                }
+                if (maxScore == score){
+                    if (new Random().nextInt(2) == 0 ){
+                        maxColumnChoice = column;
+;                    }
+                }
+                column++;
+            }
+            return new MinimaxMove(maxColumnChoice, maxScore);
+
+        } else {
+            int minScore = Integer.MAX_VALUE;
+            int minColumnChoice = randomMove(board);
+            children = getChildrenMiniMax(minimisingCounter);
+            int column = 0;
+
+            for (Board child : children) {
+                int score = minimax(depth - 1, maximisingCounter, child).getScore();
+                if (minScore > score) {
+                    minScore = score;
+                    minColumnChoice = column;
+                }
+                column++;
+            }
+
+            return new MinimaxMove(minColumnChoice, minScore);
+        }
     }
+
+
 }
