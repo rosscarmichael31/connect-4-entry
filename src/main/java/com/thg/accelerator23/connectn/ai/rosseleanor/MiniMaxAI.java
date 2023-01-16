@@ -53,7 +53,7 @@ public class MiniMaxAI implements AI {
         //int bestScore = Integer.MIN_VALUE;
 
         minimaxMove = minimax(maxDepth, maximisingCounter, board);
-
+        System.out.println(minimaxMove.getScore());
 //        children = getChildren(maximisingCounter);
 //
 //        for (int i = 0; i < children.size(); i++) {
@@ -99,8 +99,7 @@ public class MiniMaxAI implements AI {
 
     public int randomMove(Board board) {
         RandomBot randomMove = new RandomBot(maximisingCounter);
-        int move = randomMove.makeMove(board);
-        return move;
+        return randomMove.makeMove(board);
     }
 
 
@@ -111,9 +110,11 @@ public class MiniMaxAI implements AI {
         if (gameState.isEnd() || depth == 0) {
             if (gameState.isEnd()){
                 if (gameState.getWinner() == maximisingCounter) {
-                    return new MinimaxMove(randomMove(board), 1000000);
+                    return new MinimaxMove(randomMove(board), boardAnalyser.analyse(board, maximisingCounter));
+
                 } else if (gameState.getWinner() == minimisingCounter) {
-                    return new MinimaxMove(randomMove(board), -1000000);
+                    return new MinimaxMove(randomMove(board), boardAnalyser.analyse(board, maximisingCounter));
+
                 } else if (gameState.isDraw()) {
                     return new MinimaxMove(randomMove(board), 0);
                 }
@@ -137,6 +138,7 @@ public class MiniMaxAI implements AI {
                     maxScore = score;
                     maxColumnChoice = column;
                 }
+
                 column++;
             }
 
@@ -154,6 +156,7 @@ public class MiniMaxAI implements AI {
                     minScore = score;
                     minColumnChoice = column;
                 }
+
                 column++;
             }
 

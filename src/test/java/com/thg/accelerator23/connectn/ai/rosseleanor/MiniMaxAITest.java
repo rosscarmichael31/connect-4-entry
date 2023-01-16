@@ -18,7 +18,7 @@ public class MiniMaxAITest {
     MiniMaxAI miniMaxAI;
 
     private static Stream<Integer> depths() {
-        return Stream.of(1, 2, 3, 4);
+        return Stream.of(1, 2, 3, 4, 5);
     }
 
     @BeforeEach
